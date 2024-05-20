@@ -31,6 +31,5 @@ begin
   for i := 1 to count do
     writeln(errorF, errors[i]);
 end;
-begin
-  
-end.
+
+begin end.

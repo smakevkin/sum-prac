@@ -4,11 +4,7 @@ uses print,rasp,validate,perem;
 var
   ini, outF, errorF: Text;
   s: string;
-  _goods: TGoodsList;
-  _not_goods: TStringArray; { Use the defined type }
-  
-  checks: TGoods;
-
+  countGoods:integer;
 begin
   assign(ini, 'in.txt');
   assign(outF, 'out.txt');
@@ -18,17 +14,9 @@ begin
   rewrite(errorF);
   while not eof(ini) do
   begin
+    Inc(countGoods);
     readln(ini, s);
-    if check(s, checks) then
-    begin
-      inc(k);
-      setGoods(_goods, k, checks);
-    end
-    else
-    begin
-      inc(l);
-      _not_goods[l] := s;
-    end;
+    check(s, countGoods);
   end;
   SortGoodsAscending(_goods, k);
   PrintGoodsArray(outF, _goods, k);

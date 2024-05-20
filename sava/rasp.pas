@@ -23,6 +23,4 @@ begin
         arr[j + 1] := temp;
       end;
 end;
-begin
-  
-end.
+begin end.
