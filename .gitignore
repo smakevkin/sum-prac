@@ -29,6 +29,7 @@ Backup of *.doc*
 *.exe
 *.log
 *.bak*
+*.pcu
 fp.ini
 fp.cfg
 fp.dsk
