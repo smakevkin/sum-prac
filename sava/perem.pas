@@ -23,9 +23,6 @@ type
     price: real;
   end;
   TGoodsList = array[1..M] of TGoods;
-  TStringArray = array[1..M] of string;
-  var k, l: integer;
-    _goods: TGoodsList;
-  _not_goods: TStringArray; 
+  TStringArray = array[1..M] of string; 
   implementation
   begin end.
