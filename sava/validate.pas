@@ -60,7 +60,7 @@ begin
   Val(a,stri,eror);
   if (stri<100000) or (stri>999999) then sCheck:=true;
   if (fCheck=true) then Writeln('В строке ', countGoods, ' в поле Код поставщика ошибка "недопустимые символы", из поля надо убрать недопустимые символы. В поле должны находиться только натуральные цифры от 0-9.');
-  if (sCheck=true) and (fCheck=false) then Writeln('В строке ', countGoods, ' в поле Код Поставщика ошибка "формат строки", поле надо изменить. В поле должно находитсья число от 100000 до 999999');
+  if (sCheck=true) and (fCheck=false) then Writeln('В строке ', countGoods, ' в поле Код Поставщика ошибка "формат строки", поле надо изменить. В поле должно находиться число от 100000 до 999999');
   
   if (fCheck or sCheck) = false then check_ProviderCode:=true else check_ProviderCode:=false;
 end;
@@ -126,7 +126,7 @@ begin
   Val(a,stri,eror);
   if (stri<1) or (stri>9999) then sCheck:=true;
   if (fCheck=true) then Writeln('В строке ', countGoods, ' в поле Количество ошибка "недопустимые символы", из поля надо убрать недопустимые символы. В поле должны находиться только натуральные цифры от 0-9.');
-  if (sCheck=true) and (fcheck=false) then Writeln('В строке ', countGoods, ' в поле Количество ошибка "формат строки", поле надо изменить. В поле должно находитсья число от 1 до 9999, если числу не хватает 4 символов от слева должны быть соответстующие нули');
+  if (sCheck=true) and (fcheck=false) then Writeln('В строке ', countGoods, ' в поле Количество ошибка "формат строки", поле надо изменить. В поле должно находитсья число от 1 до 9999, если числу не хватает 4 символов от слева должны быть соответствующие нули');
   
   if (fCheck or sCheck) = false then check_Amount:=true else check_Amount:=false;
 end;
