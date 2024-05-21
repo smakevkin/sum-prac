@@ -34,4 +34,4 @@ fp.ini
 fp.cfg
 fp.dsk
 *.exe
-sava/main.pdb
+*.pdb
