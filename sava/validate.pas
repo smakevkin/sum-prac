@@ -42,7 +42,7 @@ begin
   if a[1] not in rusupper then sCheck:=true;
   for i:=2 to Length(a) do begin
     if a[i]<>LowerCase(a[i]) then scheck:=true;
-    if a[i] not in ruslower then fCheck:=true;
+    if (a[i] not in ruslower) and (a[i] not in rusupper) then fCheck:=true;
   end;
 
   if (fCheck=true) then Writeln('В строке ', countGoods, ' в поле Наименование продукта ошибка "недопустимые символы", из поля надо убрать недопустимые символы. В поле должны находиться только русские буквы.');
@@ -147,7 +147,7 @@ begin
   if Length(a)>(dot+3) then if a[dot+3] in num then tCheck:=true;
   if (stri<1) or (stri>99999.99) then sCheck:=true;
   if (fCheck=true) then Writeln('В строке ', countGoods, ' в поле Цена ошибка "недопустимые символы", из поля надо убрать недопустимые символы. В поле должны находиться только натуральные цифры от 0-9,либо символ "." .');
-  if (sCheck=true) then Writeln('В строке ', countGoods, ' в поле Цена ошибка "формат строки", поле надо изменить. В поле должно находитсья число от 1.00.');
+  if (sCheck=true) then Writeln('В строке ', countGoods, ' в поле Цена ошибка "формат строки", поле надо изменить. В поле должно находитсья число от 1.00 до 99999.99.');
   if (tCheck=true) then Writeln('В строке ', countGoods, ' в поле Цена ошибка "неправильная цена", поле надо изменить. В поле должно находитсья вещественно число с максимум 2 цифрами после точки. Если цена-целое число, должно быть быть дописаны два нуля, после точки.');
   
   if (fCheck or sCheck or tCheck) = false then check_Price:=true else check_Price:=false;
