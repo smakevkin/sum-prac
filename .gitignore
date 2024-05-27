@@ -35,3 +35,5 @@ fp.cfg
 fp.dsk
 *.exe
 *.pdb
+
+*.bk
