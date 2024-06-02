@@ -4,113 +4,117 @@
 // TODO!!!: выходной файлик по условию
 
 uses consts; // модуль констант, общих для всей программы
-uses products, orders, shipments; // модули работы с отдельными входными файлами
+uses providers, goods, sells; // модули работы с отдельными входными файлами
 uses sort; // модуль сортировки
-uses output; // модуль вывода ведомости
+//uses output; // модуль вывода отчёта
 
-const products_in_filename = 'products.txt';
-const orders_in_filename = 'orders.txt';
-const shipments_in_filename = 'shipments.txt';
+const providers_in_filename = 'providers.txt';
+const goods_in_filename = 'goods.txt';
+const sells_in_filename = 'sells.txt';
 
 var err_string, line: string;
-var file_record_count, sheetYear: integer;
-var f_prod, f_ord, f_ship, f_out: text;
-var l_prod: list_prod; l_ord: list_ord; l_ship: list_ship;
-var prod: product; ord: order; ship: shipment;
+var file_record_count, sheetYear, sheetQuarter: integer;
+var f_prov, f_goods, f_sells, f_out: text;
+var l_prov: list_prov; l_goods: list_goods; l_sells: list_sells;
+var prov: provider; good: good; sell: sell;
 begin
-  assign(f_prod, products_in_filename);
-  assign(f_ord, orders_in_filename);
-  assign(f_ship, shipments_in_filename);
-  reset(f_prod); 
-  reset(f_ord);
-  reset(f_ship);
+  assign(f_prov, providers_in_filename);
+  assign(f_goods, goods_in_filename);
+  assign(f_sells, sells_in_filename);
+  reset(f_prov); 
+  reset(f_goods);
+  reset(f_sells);
   
   file_record_count := 0;
-  l_prod.Count := 0;
-  while (not eof(f_prod)) and (l_prod.Count <= possible_records) do begin
+  l_prov.Count := 0;
+  while (not eof(f_prov)) and (l_prov.Count <= possible_records) do begin
     err_string := '';
-    readln(f_prod, line);
+    readln(f_prov, line);
     file_record_count := file_record_count + 1;
-    err_string := err_string + validateProductString(line);
+    err_string := err_string + validateProviderString(line);
     if err_string <> '' then begin
-      writeln('Ошибки в ' + products_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
+      writeln('Ошибки в ' + providers_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
     end else begin
-      prod := makeProductObjectFromString(line);
-      err_string := validateProductObject(prod, l_prod);
+      prov := makeProviderObjectFromString(line);
+      err_string := validateProviderObject(prov, l_prov);
       if err_string <> '' then begin
-        writeln('Ошибки в ' + products_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
+        writeln('Ошибки в ' + providers_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
       end else begin
-        l_prod.Count := l_prod.Count + 1;
-        l_prod.List[l_prod.Count] := prod;
-        //writeln(l_prod.List[l_prod.Count]);
+        l_prov.Count := l_prov.Count + 1;
+        l_prov.List[l_prov.Count] := prov;
+        writeln(l_prov.List[l_prov.Count]);
       end;
     end;
   end;
-  if not eof(f_prod) and (l_prod.Count > possible_records) then writeln('Слишком много записей о товарах. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
-  close(f_prod);
+  if not eof(f_prov) and (l_prov.Count > possible_records) then writeln('Слишком много записей о провайдерах. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
+  close(f_prov);
   
-  if l_prod.Count = 0 then writeln('В файле ' + products_in_filename + ' не найдено ни одной валидной записи о товарах!')
+  if l_prov.Count = 0 then writeln('В файле ' + providers_in_filename + ' не найдено ни одной валидной записи о провайдерах!')
   else begin
     file_record_count := 0;
-    l_ord.Count := 0;
-    while (not eof(f_ord)) and (l_ord.Count <= possible_records) do begin
+    l_goods.Count := 0;
+    while (not eof(f_goods)) and (l_goods.Count <= possible_records) do begin
       err_string := '';
-      readln(f_ord, line);
+      readln(f_goods, line);
       file_record_count := file_record_count + 1;
-      err_string := err_string + validateOrderString(line);
+      err_string := err_string + validateGoodString(line);
       if err_string <> '' then begin
-        writeln('Ошибки в ' + orders_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
+        writeln('Ошибки в ' + goods_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
       end else begin
-        ord := makeOrderObjectFromString(line);
-        err_string := validateOrderObject(ord, l_ord, l_prod);
+        good := makeGoodObjectFromString(line);
+        err_string := validateGoodObject(good, l_goods, l_prov);
         if err_string <> '' then begin
-          writeln('Ошибки в ' + orders_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
+          writeln('Ошибки в ' + goods_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
         end else begin
-          l_ord.Count := l_ord.Count + 1;
-          l_ord.List[l_ord.Count] := ord;
-          //writeln(l_ord.List[l_ord.Count]);
+          l_goods.Count := l_goods.Count + 1;
+          l_goods.List[l_goods.Count] := good;
+          writeln(l_goods.List[l_goods.Count]);
         end;
       end;
     end;
-    if not eof(f_ord) and (l_ord.Count > possible_records) then writeln('Слишком много записей о заказах. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
-    close(f_ord);
+    if not eof(f_goods) and (l_goods.Count > possible_records) then writeln('Слишком много записей о товарах. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
+    close(f_goods);
     
-    if l_ord.Count = 0 then Writeln('В файле ' + orders_in_filename + ' не найдено ни одной валидной записи о заказах!')
+    if l_goods.Count = 0 then Writeln('В файле ' + goods_in_filename + ' не найдено ни одной валидной записи о товарах!')
     else begin
+      quickSort(l_goods, 1, l_goods.Count); // ПЕРВЫМ ДЕЛОМ ОТСОРТИРОВАТЬ ТОВАРЫ (ВАЖНО!)
+      
       file_record_count := 0;
-      l_ship.Count := 0;
-      while (not eof(f_ship)) and (l_ship.Count <= possible_records) do begin
+      l_sells.Count := 0;
+      while (not eof(f_sells)) and (l_sells.Count <= possible_records) do begin
         err_string := '';
-        readln(f_ship, line);
+        readln(f_sells, line);
         file_record_count := file_record_count + 1;
-        err_string := err_string + validateShipmentString(line);
+        err_string := err_string + validateSellString(line);
         if err_string <> '' then begin
-          writeln('Ошибки в ' + shipments_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
+          writeln('Ошибки в ' + sells_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
         end else begin
-          ship := makeShipmentObjectFromString(line);
-          err_string := validateShipmentObject(ship, l_ord, l_prod);
+          sell := makeSellObjectFromString(line);
+          err_string := validateSellObject(sell, l_goods, l_sells);
           if err_string <> '' then begin
-            writeln('Ошибки в ' + shipments_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
+            writeln('Ошибки в ' + sells_in_filename + ' на ' + file_record_count.ToString() + ' строке:' + err_string);
           end else begin
-            l_ship.Count := l_ship.Count + 1;
-            l_ship.List[l_ship.Count] := ship;
-            //writeln(l_ship.List[l_ship.Count]);
+            l_sells.Count := l_sells.Count + 1;
+            l_sells.List[l_sells.Count] := sell;
+            writeln(l_sells.List[l_sells.Count]);
           end;
         end;
       end;
-      if not eof(f_ship) and (l_ship.Count > possible_records) then writeln('Слишком много записей о поставках. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
-      close(f_ship);
+      if not eof(f_sells) and (l_sells.Count > possible_records) then writeln('Слишком много записей о продажах. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
+      close(f_sells);
       
-      quickSort(l_prod, 1, l_prod.Count);
-      quickSort(l_ord, 1, l_ord.Count);
+      quickSort(l_sells, 1, l_sells.Count);
       
-      write('Введите год для создания ведомости: ');
+      write('Введите год для создания отчёта (2000-2099): ');
       readln(sheetYear);
       
-      assign(f_out, 'sheet_' + sheetYear.ToString() + '.txt');
+      write('Введите квартал для создания отчёта (1-4): ');
+      readln(sheetQuarter);
+      
+      assign(f_out, 'sheet_' + sheetYear.ToString() + '-' + sheetQuarter.ToString() + '.txt');
       rewrite(f_out);
       
-      printSheet(l_prod, l_ord, l_ship, sheetYear, f_out);
+      //printSheet(l_prod, l_ord, l_ship, sheetYear, f_out);
       
       close(f_out);
 

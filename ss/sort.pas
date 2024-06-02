@@ -24,11 +24,39 @@ begin
     repeat
       iRes := stringCompare(lg.List[i].name, pivot.name);
       jRes := stringCompare(lg.List[j].name, pivot.name);
-      while (iRes = -1) or ((iRes = 0) and ((lg.List[i].arrival_date.year <= pivot.arrival_date.year) and (lg.List[i].arrival_date.month <= pivot.arrival_date.month) and (lg.List[i].arrival_date.day <= pivot.arrival_date.day))) or ((iRes = 0) and (lg.List[i].code <= pivot.code)) do begin
+      while 
+        (iRes = -1) or 
+        (
+          (iRes = 0) and 
+          (
+            (lg.List[i].arrival_date.year <= pivot.arrival_date.year) and 
+            (lg.List[i].arrival_date.month <= pivot.arrival_date.month) and 
+            (lg.List[i].arrival_date.day <= pivot.arrival_date.day)
+          )
+        ) or 
+        (
+          (iRes = 0) and 
+          (lg.List[i].code <= pivot.code)
+        ) 
+      do begin
         i := i + 1;
         iRes := stringCompare(lg.List[i].name, pivot.name);
       end;
-      while (jRes = 1) or ((jRes = 0) and ((lg.List[j].arrival_date.year >= pivot.arrival_date.year) and (lg.List[j].arrival_date.month >= pivot.arrival_date.month) and (lg.List[j].arrival_date.day >= pivot.arrival_date.day))) or ((jRes = 0) and (lg.List[j].code >= pivot.code)) do begin
+      while 
+        (jRes = 1) or 
+        (
+          (jRes = 0) and 
+          (
+            (lg.List[j].arrival_date.year > pivot.arrival_date.year) and 
+            (lg.List[j].arrival_date.month > pivot.arrival_date.month) and 
+            (lg.List[j].arrival_date.day > pivot.arrival_date.day)
+          )
+        ) or 
+        (
+          (jRes = 0) and 
+          (lg.List[j].code > pivot.code)
+        ) 
+        do begin
         j := j - 1;
         jRes := stringCompare(lg.List[j].name, pivot.name);
       end;

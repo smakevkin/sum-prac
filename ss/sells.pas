@@ -6,12 +6,17 @@ uses space_one;
 uses consts;
 uses goods;
 
+type goods_for_sell = record
+  code: integer;
+  amount: integer;
+  cost: integer;
+end;
+
 type sell = record
   date: date; // Дата продажи
-  goods_list: array[1..max_goods] of record
-    code: integer;
-    amount: integer;
-    cost: integer;
+  goods_list: record
+    list: array[1..max_goods] of goods_for_sell;
+    count: integer;
   end;
 end;
 list_sells = record
@@ -34,9 +39,9 @@ begin
   
   i := 1;
   while (i <= max_goods) and (s <> '') do begin
-    val(get_next(s), Result.goods_list[i].code, err);
-    val(get_next(s), Result.goods_list[i].amount, err);
-    val(get_next(s), Result.goods_list[i].cost, err);
+    val(get_next(s), Result.goods_list.list[i].code, err);
+    val(get_next(s), Result.goods_list.list[i].amount, err);
+    val(get_next(s), Result.goods_list.list[i].cost, err);
     i := i + 1;
   end;
 end;
@@ -166,11 +171,11 @@ end;
 
 function validateSellObject(s: sell; gl: list_goods; sl: list_sells): string;
 var i, j: integer;
-var flag: boolean;
+var flag, allow_check: boolean;
 var err_string: string;
 begin
-  // TODO: сравнение по дате поступления-продажи
   err_string := '';
+  allow_check := true;
 
   // -------- ДАТА ПРОДАЖИ --------
   for i := 1 to sl.Count do begin
@@ -180,21 +185,26 @@ begin
   // -------- СПИСОК ТОВАРОВ --------
   i := 1;
   j := 0;
-  while (i <= max_goods) and (s.goods_list[i].code <> 0) do begin
-    // TODO: по условию возможно описание одинаковых товаров от разных поставщиков, причем еще и в разных кол-вах. нужно сделать проверку правильно, учитывая это
+  while (i <= max_goods) and (s.goods_list.list[i].code <> 0) and allow_check do begin
     if j <> 0 then
-      if s.goods_list[i].code < j then append_err(err_string, 'СПИСОК ТОВАРОВ: Список не отсортирован по кодам товаров.');
+      if s.goods_list.list[i].code < j then begin 
+        append_err(err_string, 'СПИСОК ТОВАРОВ: Список не отсортирован по кодам товаров.'); 
+        allow_check := false; 
+      end;
     
-    // Проверка на наличие всех кодов товаров
-    flag := false;
-    j := 1;
-    while not flag and (j <= gl.Count) do begin
-      if gl.List[j].code = s.goods_list[i].code then flag := true // для кода дальше подходит получение самого первого, т.к. в сортировке реализована сортировка по дате в том числе. по сути берем самого раннего.
-      else j := j + 1;
+    if allow_check then begin
+      // Проверка на наличие всех кодов товаров
+      flag := false;
+      j := 1;
+      while not flag and (j <= gl.Count) do begin
+        if gl.List[j].code = s.goods_list.list[i].code then flag := true
+        else j := j + 1;
+      end;
+      if not flag then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Код товара не соответствует ни одному из зарегистрированных товаров.')
+      else if (gl.List[j].arrival_date.year > s.date.year) or (gl.List[j].arrival_date.month > s.date.month) or (gl.List[j].arrival_date.day > s.date.day) then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Дата поступления товара установлена на более позднюю, чем дата его продажи.');
     end;
-    if not flag then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Код товара не соответствует ни одному из зарегистрированных товаров.')
-    else if (gl.List[j].arrival_date.year > s.date.year) or (gl.List[j].arrival_date.month > s.date.month) or (gl.List[j].arrival_date.day > s.date.day) then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Дата поступления товара установлена на более позднюю, чем дата его продажи.');
-    j := s.goods_list[i].code; // здесь j выступит в роли временного хранилища для кода
+    
+    j := s.goods_list.list[i].code; // здесь j выступит в роли временного хранилища для кода
     i := i + 1;
   end;
   Result := err_string;
