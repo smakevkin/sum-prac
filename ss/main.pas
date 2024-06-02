@@ -105,16 +105,22 @@ begin
       
       quickSort(l_sells, 1, l_sells.Count);
       
-      write('Введите год для создания отчёта (2000-2099): ');
-      readln(sheetYear);
-      
-      write('Введите квартал для создания отчёта (1-4): ');
-      readln(sheetQuarter);
+      sheetYear := 0;
+      while sheetYear < 2000 or sheetYear > 2099 do begin
+        write('Введите год для создания отчёта (2000-2099): ');
+        readln(sheetYear);
+      end;
+
+      sheetQuarter := 0;
+      while sheetQuarter not in [1, 2, 3, 4] do begin
+        write('Введите квартал для создания отчёта (1-4): ');
+        readln(sheetQuarter);
+      end;
       
       assign(f_out, 'sheet_' + sheetYear.ToString() + '-' + sheetQuarter.ToString() + '.txt');
       rewrite(f_out);
       
-      //printSheet(l_prod, l_ord, l_ship, sheetYear, f_out);
+      printSheet(l_prov, l_goods, l_sells, sheetYear, sheetQuarter, f_out);
       
       close(f_out);
 

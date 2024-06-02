@@ -10,7 +10,7 @@ type good = record
   code: integer;
   name: string;
   provider_code: integer;
-  arrival_date: date;
+  arrival_date: consts.Date;
   amount: integer;
   cost: real;
 end;
@@ -28,13 +28,17 @@ implementation
 
 function makeGoodObjectFromString(s: string): good;
 var err: integer;
+var _d, _m, _y: integer;
 begin
   val(get_next(s,6), Result.code, err);
   Result.name := get_next(s,20);
   val(get_next(s,6), Result.provider_code, err);
-  val(get_next(s,2), Result.arrival_date.day, err);
-  Result.arrival_date.month := months.IndexOf(get_next(s,3)) + 1;
-  val(get_next(s,4), Result.arrival_date.year, err);
+
+  val(get_next(s,2), _d, err);
+  _m := months.IndexOf(get_next(s,3)) + 1;
+  val(get_next(s,4), _y, err);
+  Result.arrival_date := Date.create(_d,_m,_y);
+
   val(get_next(s,4), Result.amount, err);
   val(get_next(s,12), Result.cost, err);
 end;
@@ -75,6 +79,13 @@ begin
     
     // Проверка на оканчивание имени НЕ на пробел или _
     if t_s[t_s.Length] = '_' then append_err(err_string, 'НАИМЕНОВАНИЕ ТОВАРА: Наименование товара не может оканчиваться на нижнее подчёркивание.');
+    
+    // Проверка на отсутствие невалидных символов
+    t_flag := false;
+    for t_i := 1 to t_s.Length do begin
+      if t_s[t_i] not in ['A'..'Z', 'А'..'Я', 'a'..'z', 'а'..'я', '0'..'9', '_'] then t_flag := true;
+    end;
+    if t_flag then append_err(err_string, 'НАИМЕНОВАНИЕ ТОВАРА: Обнаружены неприемлимые символы. Разрешены только русский и английский алфавит, цифры и нижнее подчёркивание.');
     
     // -------- КОД ПОСТАВЩИКА ТОВАРА --------
     t_s := get_next(s, tab_lengths[2]);
@@ -120,7 +131,7 @@ begin
       t_date.month := months.IndexOf(t_s);
       if t_flag then begin
         // Проверка, является ли последний день чётного месяца 30-м
-        if (t_date.month in ([4, 6, 9, 11])) and (t_date.month <> 2) and (t_date.day > 30) then append_err(err_string, 'ДАТА (МЕСЯЦ): Апрель, июнь, сентябрь и ноябрь имеют всего 30 дней.');
+        if (t_date.month in ([4, 6, 9, 11])) and (t_date.day > 30) then append_err(err_string, 'ДАТА (МЕСЯЦ): Апрель, июнь, сентябрь и ноябрь имеют всего 30 дней.');
         // Проверка, является ли месяц февралём и день меньшим, чем 30
         if (t_date.month = 2) and (t_date.day > 29) then append_err(err_string, 'ДАТА (МЕСЯЦ): В феврале не может быть больше 29 дней.');
       end;

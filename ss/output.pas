@@ -4,25 +4,26 @@ interface
 uses consts;
 uses products, orders, shipments;
 
-procedure printSheet(lp: list_prod; lo: list_ord; ls: list_ship; year: integer; f: text);
+procedure printSheet(lp: list_prov; lg: list_goods; ls: list_sells; year: integer; quarter: integer; f: text);
 function makeOutputProdString(orderName: string; cost: real; orderAmount: integer; shippedAmount: integer): string;
 
 implementation
 
-procedure printSheet(lp: list_prod; lo: list_ord; ls: list_ship; year: integer; f: text);
-var prodCounter, ordCounter, shipCounter, i: integer;
-    productGotOrderedThisYear, orderHasProduct, shipmentExists: boolean;
-    prod: product;
-    ord: order;
-    ship: shipment;
-    prodOrdered, prodShipped: integer;
+procedure printSheet(lp: list_prov; lg: list_goods; ls: list_sells; year: integer; quarter: integer; f: text);
+var provCounter, goodsCounter, sellCounter, i: integer;
+    productGotOrderedThisYearAndQuarter, orderHasProduct, shipmentExists: boolean;
+    p: provider;
+    g: good;
+    s: sell;
+    provOrdered, prodShipped: integer;
     overallOrdered, overallShipped: integer;
     res: string;
 begin
-  writeln(f, 'Ведомость поставок товаров заказчикам заводом "Прогресс" за ' + year.ToString() + ' год.');
+  writeln(f, 'Отчёт о продажах товаров розничным магазином "OKEY" за ' + quarter.ToString() + " квартал " + year.ToString() + ' года.');
   
-  // Наименование заказчика - 32 символа
-  // Цена товара - 10 символов
+  // День - 2 символа
+  // Наименование товара - 20 символов
+  // Наименование поставщика - 20 символов
   // Плановая поставка - 8 символов
   // Фактически отгружено - 8 символов
   // Отклонение - 8 символов
