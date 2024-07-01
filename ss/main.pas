@@ -6,7 +6,7 @@
 uses consts; // модуль констант, общих для всей программы
 uses providers, goods, sells; // модули работы с отдельными входными файлами
 uses sort; // модуль сортировки
-//uses output; // модуль вывода отчёта
+uses output; // модуль вывода отчёта
 
 const providers_in_filename = 'providers.txt';
 const goods_in_filename = 'goods.txt';
@@ -77,7 +77,7 @@ begin
     
     if l_goods.Count = 0 then Writeln('В файле ' + goods_in_filename + ' не найдено ни одной валидной записи о товарах!')
     else begin
-      quickSort(l_goods, 1, l_goods.Count); // ПЕРВЫМ ДЕЛОМ ОТСОРТИРОВАТЬ ТОВАРЫ (ВАЖНО!)
+      bubbleSort(l_goods); // ПЕРВЫМ ДЕЛОМ ОТСОРТИРОВАТЬ ТОВАРЫ (ВАЖНО!)
       
       file_record_count := 0;
       l_sells.Count := 0;
@@ -103,10 +103,10 @@ begin
       if not eof(f_sells) and (l_sells.Count > possible_records) then writeln('Слишком много записей о продажах. Зарегистрировано максимальное доступное количество (' + possible_records.ToString() + ').');
       close(f_sells);
       
-      quickSort(l_sells, 1, l_sells.Count);
+      bubbleSort(l_sells);
       
       sheetYear := 0;
-      while sheetYear < 2000 or sheetYear > 2099 do begin
+      while (sheetYear < 2000) or (sheetYear > 2099) do begin
         write('Введите год для создания отчёта (2000-2099): ');
         readln(sheetYear);
       end;

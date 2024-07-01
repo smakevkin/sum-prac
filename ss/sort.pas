@@ -4,103 +4,62 @@ interface
 uses goods, sells;
 uses consts;
 
-procedure quickSort(var lg: list_goods; low: integer; high: integer);
-procedure quickSort(var ls: list_sells; low: integer; high: integer);
+type goodForSell = record
+  code: integer;
+  name: string;
+  amount: integer;
+  cost: real;
+  sellDay: integer;
+end;
+type list_gfs = record
+  list: array[1..possible_records*31] of goodForSell;
+  count: integer;
+end;
+
+procedure bubbleSort(var lg: list_goods);
+procedure bubbleSort(var ls: list_sells);
+procedure bubbleSort(var lgfs: list_gfs);
 function stringCompare(s1, s2: string): integer;
 function dateCompare(d1, d2: date): integer;
 //procedure filterByYear(var lp: list_prod; var lo: list_ord; year: integer);
 
 implementation
 
-procedure quickSort(var lg: list_goods; low: integer; high: integer);
+procedure bubbleSort(var lg: list_goods);
 var i, j: integer;
-var pivot: good;
-var iRes, jRes: integer;
 begin
-  if low < high then begin
-    pivot := lg.List[(low + high) div 2];
-    i := low;
-    j := high;
-    repeat
-      iRes := stringCompare(lg.List[i].name, pivot.name);
-      jRes := stringCompare(lg.List[j].name, pivot.name);
-      while 
-        (iRes = -1) or 
-        (
-          (iRes = 0) and 
-          (
-            (lg.List[i].arrival_date.year <= pivot.arrival_date.year) and 
-            (lg.List[i].arrival_date.month <= pivot.arrival_date.month) and 
-            (lg.List[i].arrival_date.day <= pivot.arrival_date.day)
-          )
-        ) or 
-        (
-          (iRes = 0) and 
-          (lg.List[i].code <= pivot.code)
-        ) 
-      do begin
-        i := i + 1;
-        iRes := stringCompare(lg.List[i].name, pivot.name);
-      end;
-      while 
-        (jRes = 1) or 
-        (
-          (jRes = 0) and 
-          (
-            (lg.List[j].arrival_date.year > pivot.arrival_date.year) and 
-            (lg.List[j].arrival_date.month > pivot.arrival_date.month) and 
-            (lg.List[j].arrival_date.day > pivot.arrival_date.day)
-          )
-        ) or 
-        (
-          (jRes = 0) and 
-          (lg.List[j].code > pivot.code)
-        ) 
-        do begin
-        j := j - 1;
-        jRes := stringCompare(lg.List[j].name, pivot.name);
-      end;
-      if i <= j then begin
-        (lg.List[i], lg.List[j]) := (lg.List[j], lg.List[i]);
-        i := i + 1;
-        j := j - 1;
-      end;
-    until i > j;
-    
-    if low < j then quickSort(lg, low, j);
-    if i < high then quickSort(lg, i, high); 
+  for i := 1 to lg.count-1 do begin
+    for j := i+1 to lg.count do begin
+      if 
+        (stringCompare(lg.list[i].name, lg.list[j].name) = 1) or
+        (dateCompare(lg.list[i].arrival_date, lg.list[j].arrival_date) = 1)
+      then (lg.list[i], lg.list[j]) := (lg.list[j], lg.list[i]);
+    end;
   end;
 end;
 
-procedure quickSort(var ls: list_sells; low: integer; high: integer);
+procedure bubbleSort(var ls: list_sells);
 var i, j: integer;
-var pivot: sell;
-var iRes, jRes: integer;
 begin
-  if low < high then begin
-    pivot := ls.List[(low + high) div 2];
-    i := low;
-    j := high;
-    repeat
-      iRes := dateCompare(ls.List[i].date, pivot.date);
-      jRes := dateCompare(ls.List[j].date, pivot.date);
-      while (iRes = -1) do begin
-        i := i + 1;
-        iRes := dateCompare(ls.List[i].date, pivot.date);
-      end;
-      while (jRes = 1) do begin
-        j := j - 1;
-        jRes := dateCompare(ls.List[j].date, pivot.date);
-      end;
-      if i <= j then begin
-        (ls.List[i], ls.List[j]) := (ls.List[j], ls.List[i]);
-        i := i + 1;
-        j := j - 1;
-      end;
-    until i > j;
-    
-    if low < j then quickSort(ls, low, j);
-    if i < high then quickSort(ls, i, high); 
+  for i := 1 to ls.count-1 do begin
+    for j := i+1 to ls.count do begin
+      if 
+        (dateCompare(ls.list[i].date, ls.list[j].date) = 1)
+      then (ls.list[i], ls.list[j]) := (ls.list[j], ls.list[i]);
+    end;
+  end;
+end;
+
+procedure bubbleSort(var lgfs: list_gfs);
+var i, j: integer;
+begin
+  for i := 1 to lgfs.count-1 do begin
+    for j := i+1 to lgfs.count do begin
+      if 
+        (stringCompare(lgfs.list[i].name, lgfs.list[j].name) = 1) or
+        (lgfs.list[i].sellDay > lgfs.list[j].sellDay)
+      then (lgfs.list[i], lgfs.list[j]) := (lgfs.list[j], lgfs.list[i]);
+    end;
   end;
 end;
 
@@ -138,7 +97,7 @@ function dateCompare(d1, d2: date): integer;
 var i: int64;
 begin
   result := 0;
-  i := (d1.year - d2.year) * 31622400 + (d1.month - d2.month) * 2592000 + (d1.day - d2.day) * 86400; // че-то типа сравнения даты по UNIX таймстампу
+  i := (d1.getYear() - d2.getYear()) * 31622400 + (d1.getMonth() - d2.getMonth()) * 2592000 + (d1.getDay() - d2.getDay()) * 86400; // че-то типа сравнения даты по UNIX таймстампу
   if i < 0 then result := -1
   else if i > 0 then result := 1;
 end;

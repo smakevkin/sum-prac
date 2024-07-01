@@ -9,11 +9,11 @@ uses goods;
 type goods_for_sell = record
   code: integer;
   amount: integer;
-  cost: integer;
+  cost: real;
 end;
 
 type sell = record
-  date: date; // Дата продажи
+  date: consts.Date; // Дата продажи
   goods_list: record
     list: array[1..max_goods] of goods_for_sell;
     count: integer;
@@ -32,16 +32,20 @@ implementation
 
 function makeSellObjectFromString(s: string): sell;
 var i, err: integer;
+    day, month, year: integer;
 begin
-  val(get_next(s), Result.date.day, err);
-  Result.date.month := months.IndexOf(get_next(s)) + 1;
-  val(get_next(s), Result.date.year, err);
+  val(get_next(s), day, err);
+  month := months.IndexOf(get_next(s)) + 1;
+  val(get_next(s), year, err);
+
+  Result.date := Date.create(day, month, year);
   
   i := 1;
   while (i <= max_goods) and (s <> '') do begin
     val(get_next(s), Result.goods_list.list[i].code, err);
     val(get_next(s), Result.goods_list.list[i].amount, err);
     val(get_next(s), Result.goods_list.list[i].cost, err);
+    Result.goods_list.count := Result.goods_list.count + 1;
     i := i + 1;
   end;
 end;
@@ -85,7 +89,7 @@ begin
     
     // Проверка, что задан верный месяц
     if not months.Contains(t_s) then begin 
-      append_err(err_string, 'ДАТА (МЕСЯЦ): Месяц должен состоять из трёх латинских букв по началу их названия (например, "JAN" для января (January)).');
+      append_err(err_string, 'ДАТА (МЕСЯЦ): Месяц должен быть задан заглавными буквами по первым трём буквам его русского названия (например, "ЯНВ" для января).');
       t_flag := false;
     end
     else begin
@@ -129,7 +133,7 @@ begin
         
         // Проверка на отсутствие лишних символов в коде товара
         val(t_s, t_i, t_err);
-        if (t_err <> 0) or (t_i > 999999) or (t_s[1] = '+') or (t_s[1] = '-') then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Код товара должен состоять ТОЛЬКО максимум из 8 цифр, не должно быть букв и других символов.');
+        if (t_err <> 0) or (t_i > 999999) or (t_s[1] = '+') or (t_s[1] = '-') then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Код товара должен состоять ТОЛЬКО максимум из 6 цифр, не должно быть букв и других символов.');
         
         if t_err_string <> '' then err_string := err_string + t_err_string;
         t_switch := 1;
@@ -144,22 +148,25 @@ begin
         val(t_s, t_i, t_err);
         if (t_err <> 0) or (t_s[1] = '+') or (t_s[1] = '-') then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Кол-во товара должен состоять ТОЛЬКО из цифр, не должно быть букв и других символов.');
         
+        // Проверка на длину числа
+        if (t_i > 999999) then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Количество товара не может быть больше 999999 за раз.');
+
         if t_err_string <> '' then err_string := err_string + t_err_string;
         t_switch := 2;
       end
       else if t_switch = 2 then begin
         t_err_string := '';
         
-        // Проверка на начало кол-ва НЕ с нуля
-        if t_s[1] = '0' then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Стоимость товара не может начинаться с 0.');
+        // Проверка на начало розничной цены НЕ с нуля
+        if t_s[1] = '0' then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Розничная цена товара не может начинаться с 0.');
         
         // Проверка на отсутствие лишних символов в кол-ве товара
         val(t_s, t_r, t_err);
-        if (t_err <> 0) or (t_s[1] = '+') or (t_s[1] = '-') then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Стоимость товара должен состоять ТОЛЬКО из цифр, не должно быть букв и других символов.');
+        if (t_err <> 0) or (t_s[1] = '+') or (t_s[1] = '-') then append_err(t_err_string, 'ТОВАР №' + i.ToString() + ': Розничная цена товара должен состоять ТОЛЬКО из цифр, не должно быть букв и других символов.');
         
         // Проверка на наличие точки и конкретно двух цифр после неё
         t_i := pos('.', t_s);
-        if (t_i = 0) or (t_s.Length - t_i <> 2) then append_err(err_string, 'ТОВАР №' + i.ToString() + ': В стоимости товара обязательно должно присутствовать две цифры после точки, даже если дробное значение равно нулю (тогда стоимость должна иметь ".00" в конце).');
+        if (t_i = 0) or (t_s.Length - t_i <> 2) then append_err(err_string, 'ТОВАР №' + i.ToString() + ': В розничной цене товара обязательно должно присутствовать две цифры после точки, даже если дробное значение равно нулю (тогда стоимость должна иметь ".00" в конце).');
         
         if t_err_string <> '' then err_string := err_string + t_err_string;
         t_switch := 0;
@@ -179,7 +186,7 @@ begin
 
   // -------- ДАТА ПРОДАЖИ --------
   for i := 1 to sl.Count do begin
-    if (s.date.day = sl.List[i].date.day) and (s.date.month = sl.List[i].date.month) and (s.date.year = sl.List[i].date.year) then append_err(err_string, 'ДАТА: В эту дату уже произошла продажа. Объедините информацию о данных продажах.');
+    if (s.date.getDay() = sl.List[i].date.getDay()) and (s.date.getMonth() = sl.List[i].date.getMonth()) and (s.date.getYear() = sl.List[i].date.getYear()) then append_err(err_string, 'ДАТА: В эту дату уже произошла продажа. Объедините информацию о данных продажах.');
   end;
 
   // -------- СПИСОК ТОВАРОВ --------
@@ -201,7 +208,7 @@ begin
         else j := j + 1;
       end;
       if not flag then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Код товара не соответствует ни одному из зарегистрированных товаров.')
-      else if (gl.List[j].arrival_date.year > s.date.year) or (gl.List[j].arrival_date.month > s.date.month) or (gl.List[j].arrival_date.day > s.date.day) then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Дата поступления товара установлена на более позднюю, чем дата его продажи.');
+      else if gl.list[j].arrival_date.compare(s.date) = 1 then append_err(err_string, 'ТОВАР №' + i.ToString() + ': Дата поступления товара установлена на более позднюю, чем дата его продажи.');
     end;
     
     j := s.goods_list.list[i].code; // здесь j выступит в роли временного хранилища для кода
